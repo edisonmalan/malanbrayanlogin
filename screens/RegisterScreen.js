@@ -1,10 +1,36 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, TouchableOpacity } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import CryptoJS from 'crypto-js';
 
 export default function RegisterScreen({ navigation }) {
   const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+
+  const handleRegister = async () => {
+    console.log('Datos del formulario de registro:', { email, username, password });
+
+    // Encriptar la contraseña
+    const encryptedPassword = CryptoJS.AES.encrypt(password, 'secret-key').toString();
+    console.log('Contraseña original:', password);
+    console.log('Contraseña encriptada:', encryptedPassword);
+    
+    const user = {
+      email,
+      username,
+      password: encryptedPassword,
+    };
+
+    try {
+      await AsyncStorage.setItem(username, JSON.stringify(user));
+      console.log('Usuario registrado en AsyncStorage:', user);
+      alert('Registro exitoso!');
+      navigation.navigate('Login');
+    } catch (error) {
+      console.log('Error al registrar usuario:', error);
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -32,7 +58,7 @@ export default function RegisterScreen({ navigation }) {
         secureTextEntry
         placeholder="********"
       />
-      <Button title="Registrarse" onPress={() => { /* Lógica para registrarse */ }} />
+      <Button title="Registrarse" onPress={handleRegister} />
       <TouchableOpacity onPress={() => navigation.navigate('Login')}>
         <Text style={styles.link}>¿Ya tienes una cuenta? Inicia sesión ahora</Text>
       </TouchableOpacity>
